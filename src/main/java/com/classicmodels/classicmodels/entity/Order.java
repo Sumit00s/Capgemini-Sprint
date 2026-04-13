@@ -9,9 +9,11 @@ import java.util.List;
 
 @Entity
 @Table(name = "orders")
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
-@ToString(exclude = {"customer", "orderDetails"})
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString(exclude = { "customer", "orderDetails" })
 @EqualsAndHashCode(of = "orderNumber")
 public class Order {
 
@@ -36,10 +38,8 @@ public class Order {
 
     @Column(name = "status", nullable = false)
     @NotBlank(message = "Status is required")
-    @Pattern(
-        regexp = "^(Shipped|Resolved|Cancelled|On Hold|Disputed|In Process)$",
-        message = "Status must be one of: Shipped, Resolved, Cancelled, On Hold, Disputed, In Process"
-    )
+
+    @Pattern(regexp = "^(Shipped|Resolved|Cancelled|On Hold|Disputed|In Process)$", message = "Status must be one of: Shipped, Resolved, Cancelled, On Hold, Disputed, In Process")
     private String status;
 
     @Column(name = "comments", columnDefinition = "TEXT")
