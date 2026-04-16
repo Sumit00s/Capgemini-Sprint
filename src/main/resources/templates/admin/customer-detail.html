@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Partner Detail')}"></head>
+
+<style>
+    :root {
+        --ds-primary-dark:      #1B263B;
+        --ds-secondary:         #415A77;
+        --ds-accent:            #778DA9;
+        --ds-surface:           #f8f9fa;
+        --ds-surface-high:      #e3e9ec;
+        --ds-surface-white:     #ffffff;
+        --ds-on-surface:        #2b3437;
+        --ds-outline:           #737c7f;
+        --font-headline: 'Newsreader', Georgia, serif;
+        --font-body: 'Manrope', 'Inter', sans-serif;
+        --radius-md: 8px;
+        --radius-sm: 4px;
+    }
+
+    body.admin-layout {
+        background-color: var(--ds-surface);
+        min-height: 100vh;
+        display: flex;
+    }
+
+    .main-content {
+        flex: 1;
+        margin-left: 250px;
+        padding: 4rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #f1f4f6 100%);
+    }
+
+    /* ── HERO SECTION ── */
+    .partner-tag {
+        font-family: var(--font-body);
+        font-size: 0.6875rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--ds-outline);
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    .partner-tag::after {
+        content: '';
+        width: 3rem;
+        height: 1px;
+        background: #ced4da;
+    }
+    .partner-title {
+        font-family: var(--font-headline);
+        font-size: 2.75rem;
+        font-weight: 400;
+        color: var(--ds-primary-dark);
+        letter-spacing: -0.02em;
+        margin-bottom: 0.5rem;
+    }
+    .partner-id {
+        font-family: var(--font-body);
+        font-size: 0.875rem;
+        color: var(--ds-secondary);
+        font-weight: 600;
+        margin-bottom: 3rem;
+    }
+
+    /* ── INFO GRID ── */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+        margin-bottom: 4rem;
+    }
+    .info-card {
+        background: #fff;
+        padding: 1.5rem;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--ds-surface-high);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+    .info-label {
+        font-size: 0.625rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--ds-outline);
+        margin-bottom: 0.75rem;
+    }
+    .info-value {
+        font-family: var(--font-body);
+        font-size: 0.9375rem;
+        color: var(--ds-on-surface);
+        font-weight: 500;
+    }
+
+    /* ── TAB SYSTEM ── */
+    .activity-hub {
+        background: #fff;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--ds-surface-high);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.04);
+        overflow: hidden;
+    }
+    .tabs-header {
+        background: var(--ds-surface);
+        border-bottom: 1px solid var(--ds-surface-high);
+        display: flex;
+        padding: 0 2rem;
+    }
+    .tab-btn {
+        padding: 1.25rem 2rem;
+        font-family: var(--font-headline);
+        font-size: 1.125rem;
+        color: var(--ds-outline);
+        background: none;
+        border: none;
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .tab-btn.active {
+        color: var(--ds-primary-dark);
+        border-bottom-color: var(--ds-primary-dark);
+    }
+    .tab-btn:hover:not(.active) {
+        color: var(--ds-secondary);
+    }
+
+    .tab-panel {
+        display: none;
+        padding: 2rem;
+    }
+    
+    /* Pure CSS Tabs - Corrected sibling hierarchy */
+    #tab-orders:checked ~ .main-content .activity-hub #ordersTab,
+    #tab-payments:checked ~ .main-content .activity-hub #paymentsTab {
+        display: block;
+    }
+    #tab-orders:checked ~ .main-content .activity-hub label[for="tab-orders"],
+    #tab-payments:checked ~ .main-content .activity-hub label[for="tab-payments"] {
+        color: var(--ds-primary-dark);
+        border-bottom-color: var(--ds-primary-dark);
+    }
+
+    .tab-input { display: none; }
+    .tab-label {
+        padding: 1.25rem 2rem;
+        font-family: var(--font-headline);
+        font-size: 1.125rem;
+        color: var(--ds-outline);
+        background: none;
+        border: none;
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-block;
+    }
+    .tab-label:hover { color: var(--ds-secondary); }
+
+    /* ── TABLES ── */
+    .registry-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: var(--font-body);
+    }
+    .registry-table th {
+        text-align: left;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        color: var(--ds-outline);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        padding: 1rem;
+        border-bottom: 1px solid var(--ds-surface-high);
+    }
+    .registry-table td {
+        padding: 1rem;
+        font-size: 0.875rem;
+        color: var(--ds-on-surface);
+        border-bottom: 1px solid var(--ds-surface-low);
+    }
+    
+    .status-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+    .status-shipped { background: #dcfce7; color: #166534; }
+    .status-pending { background: #fef9c3; color: #854d0e; }
+
+    /* loading states */
+    .loader { padding: 3rem; text-align: center; color: var(--ds-outline); font-family: var(--font-body); font-size: 0.8125rem; }
+
+    @media (max-width: 1024px) {
+        .main-content { margin-left: 0; padding: 2rem; }
+        .info-grid { grid-template-columns: 1fr; }
+    }
+</style>
+
+<body class="page-wrapper admin-layout">
+    <th:block th:replace="~{fragments/navigation :: admin_sidebar}"></th:block>
+    
+    <!-- Tab State -->
+    <input type="radio" id="tab-orders" name="tabs" class="tab-input" checked>
+    <input type="radio" id="tab-payments" name="tabs" class="tab-input">
+    
+    <div class="main-content">
+        <a th:href="@{/admin/customers}" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--ds-secondary); font-size: 0.8125rem; font-weight: 600; margin-bottom: 2rem;">
+            <i class="fa-solid fa-arrow-left"></i> Return to Archive
+        </a>
+
+        <div class="partner-tag">Partner Profile</div>
+        <h1 id="customerName" class="partner-title" th:text="${customer.customerName}">Loading Profile...</h1>
+        <div id="customerID" class="partner-id">Registry ID: <span th:text="${customer.customerNumber}"></span></div>
+
+        <div class="info-grid">
+            <div class="info-card">
+                <div class="info-label">Identity & Contact</div>
+                <div id="contactPerson" class="info-value" th:text="${customer.contactFirstName + ' ' + customer.contactLastName}">...</div>
+                <div id="contactPhone" style="font-size: 0.8125rem; color: var(--ds-outline); margin-top: 0.25rem;" th:text="${customer.phone}">...</div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">Regional headquarters</div>
+                <div id="locationHQ" class="info-value" th:text="${customer.city + ', ' + customer.country}">...</div>
+                <div id="postalCode" style="font-size: 0.8125rem; color: var(--ds-outline); margin-top: 0.25rem;" th:text="${'Postal: ' + (customer.postalCode != null ? customer.postalCode : 'N/A')}">...</div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">Financial & Rep</div>
+                <div id="creditLimit" class="info-value" th:text="${'Credit: $' + #numbers.formatDecimal(customer.creditLimit, 0, 'COMMA', 0, 'POINT')}">...</div>
+                <div id="salesRep" style="font-size: 0.8125rem; color: var(--ds-outline); margin-top: 0.25rem;" th:text="${'Sales Rep: ' + (customer.salesRepName != null ? customer.salesRepName : 'Unassigned')}">...</div>
+            </div>
+        </div>
+
+        <!-- Activity Hub -->
+        <div class="activity-hub">
+            <div class="tabs-header">
+                <label for="tab-orders" class="tab-label">Orders Registry</label>
+                <label for="tab-payments" class="tab-label">Payment Records</label>
+            </div>
+
+            <!-- Orders Tab -->
+            <div id="ordersTab" class="tab-panel">
+                <div class="table-responsive">
+                    <table class="registry-table">
+                        <thead>
+                            <tr>
+                                <th>Order #</th>
+                                <th>Order Date</th>
+                                <th>Requied Date</th>
+                                <th>Status</th>
+                                <th style="text-align: right;">Operations</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody">
+                            <tr th:each="o : ${orders}">
+                                <td style="font-family: Newsreader, serif; font-size: 1rem; font-weight: 600;" th:text="${'#' + o.orderNumber}"></td>
+                                <td th:text="${o.orderDate}"></td>
+                                <td th:text="${o.requiredDate}"></td>
+                                <td><span class="status-badge" th:classappend="${o.status == 'Shipped' ? 'status-shipped' : 'status-pending'}" th:text="${o.status}"></span></td>
+                                <td style="text-align: right;"><a href="#" class="btn-link" style="color: var(--ds-secondary); font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">View Details</a></td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(orders)}">
+                                <td colspan="5" style="text-align: center;">No orders found for this partner.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Payments Tab -->
+            <div id="paymentsTab" class="tab-panel">
+                <div class="table-responsive">
+                    <table class="registry-table">
+                        <thead>
+                            <tr>
+                                <th>Check #</th>
+                                <th>Payment Date</th>
+                                <th>Amount</th>
+                                <th style="text-align: right;">Operations</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paymentsTableBody">
+                            <tr th:each="p : ${payments}">
+                                <td style="font-weight: 600;" th:text="${p.checkNumber}"></td>
+                                <td th:text="${p.paymentDate}"></td>
+                                <td style="font-family: Newsreader, serif; font-size: 1rem; font-weight: 600; color: #166534;" th:text="${'$' + #numbers.formatDecimal(p.amount, 0, 'COMMA', 0, 'POINT')}"></td>
+                                <td style="text-align: right;"><a href="#" style="color: var(--ds-secondary); font-size: 0.75rem;"><i class="fa-solid fa-file-invoice"></i></a></td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(payments)}">
+                                <td colspan="4" style="text-align: center;">No financial records found.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <footer style="margin-top: 4rem; text-align: center; border-top: 1px solid var(--ds-surface-high); padding-top: 2rem;">
+            <p style="font-size: 0.75rem; color: var(--ds-outline); letter-spacing: 0.05em;">ClassicModels Enterprise Archive &copy; 2026</p>
+        </footer>
+    </div>
+
+</body>
+</html>
