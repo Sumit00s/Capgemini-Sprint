@@ -91,4 +91,22 @@ public class ProductService {
                 .map(mapper::toProductDTO)
                 .toList();
     }
+
+    public List<ProductDTO> searchByName(String name) {
+        return productRepository.findByProductNameContainingIgnoreCase(name)
+                .stream()
+                .map(mapper::toProductDTO)
+                .toList();
+    }
+
+    public List<ProductDTO> getByVendor(String vendor) {
+        return productRepository.findByProductVendor(vendor)
+                .stream()
+                .map(mapper::toProductDTO)
+                .toList();
+    }
+
+    public List<String> getAllVendors() {
+        return productRepository.findDistinctProductVendors();
+    }
 }

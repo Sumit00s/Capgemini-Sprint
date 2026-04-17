@@ -14,6 +14,8 @@ public interface ProductRepository extends JpaRepository<Product, String> {
     List<Product> findByProductNameContainingIgnoreCase(String productName);
     List<Product> findByProductVendor(String productVendor);
 
+    @org.springframework.data.jpa.repository.Query("SELECT DISTINCT p.productVendor FROM Product p ORDER BY p.productVendor ASC")
+    List<String> findDistinctProductVendors();
     List<Product> findByQuantityInStockLessThan(Short threshold);
     Long countByQuantityInStockLessThan(Short threshold);
 }

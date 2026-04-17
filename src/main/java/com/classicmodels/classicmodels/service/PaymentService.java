@@ -37,6 +37,13 @@ public class PaymentService {
                 .toList();
     }
 
+    public PaymentDTO getPaymentById(Integer customerNumber, String checkNumber) {
+        PaymentId id = new PaymentId(customerNumber, checkNumber);
+        return paymentRepository.findById(id)
+                .map(mapper::toPaymentDTO)
+                .orElseThrow(() -> new ResourceNotFoundException("Payment record not found."));
+    }
+
     public PaymentDTO createPayment(Payment payment) {
         if (paymentRepository.existsById(payment.getId())) {
             throw new RuntimeException(
