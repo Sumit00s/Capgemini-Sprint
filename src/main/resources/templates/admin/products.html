@@ -1,82 +1,431 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/layout :: head('Manage Products')}"></head>
+<head th:replace="~{fragments/layout :: head('Products Resource')}"></head>
+
+<style>
+    /* ── BASE TOKENS ── */
+    :root {
+        --ds-primary-dark:      #1B263B;
+        --ds-secondary:         #415A77;
+        --ds-accent:            #778DA9;
+        --ds-surface:           #f8f9fa;
+        --ds-surface-high:      #e3e9ec;
+        --ds-surface-white:     #ffffff;
+        --ds-on-surface:        #2b3437;
+        --ds-outline:           #737c7f;
+        
+        --font-headline: 'Newsreader', Georgia, serif;
+        --font-body: 'Manrope', 'Inter', sans-serif;
+        --radius-md: 8px;
+        --radius-sm: 4px;
+        --transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    body.admin-layout {
+        background-color: var(--ds-surface);
+        min-height: 100vh;
+        display: flex;
+    }
+
+    /* ── REGISTRY ARCHITECTURE ── */
+    .main-content {
+        flex: 1;
+        margin-left: 250px;
+        padding: 4rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #f1f4f6 100%);
+    }
+
+    .archive-tag {
+        font-family: var(--font-body);
+        font-size: 0.6875rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--ds-outline);
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    .archive-tag::after {
+        content: ''; width: 3rem; height: 1px; background: #ced4da;
+    }
+    
+    .archive-title {
+        font-family: var(--font-headline);
+        font-size: 2.75rem;
+        font-weight: 400;
+        color: var(--ds-primary-dark);
+        letter-spacing: -0.02em;
+        margin-bottom: 2.5rem;
+    }
+
+    /* ── TOOLBAR ── */
+    .archive-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #fff;
+        padding: 1rem 1.5rem;
+        border-radius: var(--radius-md);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        margin-bottom: 2rem;
+        border: 1px solid var(--ds-surface-high);
+    }
+    
+    .toolbar-group { display: flex; gap: 1rem; align-items: center; }
+    
+    .archive-input {
+        font-family: var(--font-body);
+        font-size: 0.875rem;
+        padding: 0.625rem 1rem;
+        border: 1px solid var(--ds-surface-high);
+        border-radius: var(--radius-sm);
+        background: var(--ds-surface);
+        color: var(--ds-on-surface);
+        transition: var(--transition);
+        width: 260px;
+    }
+    .archive-input:focus {
+        background: #fff;
+        border-color: var(--ds-secondary);
+        outline: none;
+    }
+
+    .archive-btn-primary {
+        background: var(--ds-primary-dark);
+        color: #fff;
+        border: none;
+        padding: 0.625rem 1.25rem;
+        font-family: var(--font-body);
+        font-size: 0.8125rem;
+        font-weight: 600;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: var(--transition);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .archive-btn-primary:hover { background: var(--ds-secondary); }
+
+    /* ── DATA GRID ── */
+    .archive-card {
+        background: #fff;
+        border-radius: var(--radius-md);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.04);
+        border: 1px solid var(--ds-surface-high);
+        overflow: hidden;
+    }
+
+    .archive-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: var(--font-body);
+    }
+    .archive-table th {
+        background: var(--ds-surface);
+        text-align: left;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        color: var(--ds-outline);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--ds-surface-high);
+    }
+    .archive-table td {
+        padding: 1.25rem 1.5rem;
+        font-size: 0.875rem;
+        color: var(--ds-on-surface);
+        border-bottom: 1px solid var(--ds-surface-high);
+        vertical-align: middle;
+        transition: background 0.2s;
+    }
+    .archive-table tr:last-child td { border-bottom: none; }
+    .archive-table tbody tr:hover { background: #fafbfc; cursor: pointer; }
+
+    .id-tag {
+        font-family: 'Newsreader', serif;
+        font-weight: 600;
+        font-size: 1rem;
+        color: var(--ds-primary-dark);
+    }
+    
+    .low-stock {
+        color: #d93025;
+        font-weight: 700;
+    }
+
+    .action-btn {
+        background: none;
+        border: none;
+        color: var(--ds-outline);
+        cursor: pointer;
+        padding: 0.5rem;
+        transition: var(--transition);
+    }
+    .action-btn:hover { color: var(--ds-secondary); }
+    .action-btn.delete:hover { color: #d93025; }
+
+    /* ── SLIDING DRAWER ── */
+    #drawerOverlay {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+        z-index: 1000; opacity: 0; pointer-events: none;
+        transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        backdrop-filter: blur(2px);
+    }
+    #drawerOverlay.active { opacity: 1; pointer-events: all; }
+
+    #entryDrawer {
+        position: fixed; right: -560px; top: 0; width: 560px; height: 100%;
+        background: #fff; z-index: 1001; box-shadow: -10px 0 40px rgba(0,0,0,0.1);
+        transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex; flex-direction: column;
+    }
+    #entryDrawer.active { right: 0; }
+
+    .drawer-header {
+        padding: 2.5rem 2.5rem 1.5rem;
+        border-bottom: 1px solid var(--ds-surface-high);
+        background: var(--ds-surface);
+    }
+    .drawer-title {
+        font-family: var(--font-headline);
+        font-size: 2rem;
+        color: var(--ds-primary-dark);
+        font-weight: 400;
+    }
+
+    .drawer-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 2.5rem;
+    }
+    
+    .drawer-footer {
+        padding: 1.5rem 2.5rem;
+        border-top: 1px solid var(--ds-surface-high);
+        background: var(--ds-surface);
+        display: flex; gap: 1rem;
+    }
+
+    .form-section { margin-bottom: 2.5rem; }
+    .section-label {
+        font-family: var(--font-body);
+        font-size: 0.6875rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--ds-outline);
+        margin-bottom: 1rem;
+        display: block;
+        border-bottom: 1px solid var(--ds-surface-high);
+        padding-bottom: 0.5rem;
+    }
+
+    .input-group { margin-bottom: 1.25rem; }
+    .input-group label {
+        display: block; font-size: 0.75rem; font-weight: 600;
+        color: var(--ds-secondary); margin-bottom: 0.5rem;
+    }
+    .drawer-input {
+        width: 100%; font-family: var(--font-body); font-size: 0.875rem;
+        padding: 0.75rem; border: 1px solid var(--ds-surface-high);
+        border-radius: var(--radius-sm); background: var(--ds-surface);
+        transition: var(--transition); box-sizing: border-box;
+    }
+    .drawer-input:focus { background: #fff; border-color: var(--ds-secondary); outline: none; }
+    
+    .drawer-textarea {
+        width: 100%; font-family: var(--font-body); font-size: 0.875rem;
+        padding: 0.75rem; border: 1px solid var(--ds-surface-high);
+        border-radius: var(--radius-sm); background: var(--ds-surface);
+        transition: var(--transition); box-sizing: border-box;
+        resize: vertical; min-height: 120px;
+    }
+    .drawer-textarea:focus { background: #fff; border-color: var(--ds-secondary); outline: none; }
+</style>
+
 <body class="page-wrapper admin-layout">
+    <!-- Sidebar component -->
     <th:block th:replace="~{fragments/navigation :: admin_sidebar}"></th:block>
     
     <div class="main-content">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
-            <h1 style="margin: 0;"><i class="fa-solid fa-box-open"></i> Products</h1>
-            <button class="btn btn-primary"><i class="fa-solid fa-plus"></i> Add Product</button>
-        </div>
-        
-        <div class="card" style="margin-bottom: 2rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div style="display: flex; gap: 1rem;">
-                    <select class="form-control" style="width: 250px;">
-                        <option value="">Filter by Product Line</option>
-                        <option>Classic Cars</option>
-                        <option>Motorcycles</option>
-                        <option>Planes</option>
-                    </select>
-                </div>
-                <div>
-                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: var(--status-warning);">
-                        <input type="checkbox" style="width: 1.25rem; height: 1.25rem;"> Show Low Stock Items Only (< 50)
-                    </label>
-                </div>
+        <div class="archive-tag">Inventory Architecture</div>
+        <h1 class="archive-title">Products Resource</h1>
+
+        <!-- Toolbar -->
+        <div class="archive-toolbar">
+            <form th:action="@{/admin/products}" method="GET" class="toolbar-group">
+                <input type="text" name="name" id="archiveSearch" class="archive-input" placeholder="Search by Model Name..." th:value="${param.name}">
+                
+                <select name="productLine" class="archive-input" style="width: 160px;" onchange="this.form.submit()">
+                    <option value="">All Lines</option>
+                    <option th:each="line : ${productLines}" 
+                            th:value="${line.productLine}" 
+                            th:text="${line.productLine}"
+                            th:selected="${#strings.equals(param.productLine, line.productLine)}">
+                    </option>
+                </select>
+
+                <select name="vendor" class="archive-input" style="width: 160px;" onchange="this.form.submit()">
+                    <option value="">All Vendors</option>
+                    <option th:each="v : ${vendors}" 
+                            th:value="${v}" 
+                            th:text="${v}"
+                            th:selected="${#strings.equals(param.vendor, v)}">
+                    </option>
+                </select>
+
+                <button type="submit" class="archive-btn-primary" style="padding: 0.625rem;"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </form>
+            <div class="toolbar-group">
+                <a th:href="@{/admin/products(threshold=100)}" class="archive-btn-primary" style="background: var(--ds-surface-high); color: var(--ds-on-surface);">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Low Stock
+                </a>
+                <a th:href="@{/admin/products(action='add')}" class="archive-btn-primary">
+                    <i class="fa-solid fa-plus"></i> Catalog Issue
+                </a>
             </div>
         </div>
         
-        <div class="card" style="padding: 0; overflow: hidden;">
+        <!-- Alerts -->
+        <div th:if="${message}" class="alert" style="background:#e6f4ea; color:#1e8e3e; padding:1rem; border-radius:4px; margin-bottom:1rem;" th:text="${message}"></div>
+        <div th:if="${error}" class="alert" style="background:#fce8e6; color:#d93025; padding:1rem; border-radius:4px; margin-bottom:1rem;" th:text="${error}"></div>
+
+        <!-- Data Grid -->
+        <div class="archive-card">
             <div class="table-responsive">
-                <table class="table">
+                <table class="archive-table">
                     <thead>
                         <tr>
-                            <th>Code</th>
-                            <th>Name</th>
-                            <th>Line</th>
-                            <th>Vendor</th>
+                            <th>Model Code</th>
+                            <th>Nomenclature</th>
+                            <th>Product Line</th>
                             <th>Scale</th>
-                            <th>Buy Price</th>
-                            <th>MSRP</th>
                             <th>Stock</th>
-                            <th>Actions</th>
+                            <th>Buy Price</th>
+                            <th style="min-width: 100px; text-align: right;">Registry Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td style="font-weight: 600; font-family: monospace;">S10_1678</td>
-                            <td style="font-weight: 500;">1969 Harley Davidson Ultimate Chopper</td>
-                            <td>Motorcycles</td>
-                            <td>Min Lin Diecast</td>
-                            <td>1:10</td>
-                            <td>$48.81</td>
-                            <td>$95.70</td>
-                            <td style="background-color: #FEF3C7; font-weight: 600; color: #92400E; text-align: center;">79</td>
-                            <td style="white-space: nowrap;">
-                                <button class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;"><i class="fa-solid fa-pen"></i></button>
-                                <button class="btn" style="background-color: var(--status-danger); color: white; padding: 0.25rem 0.5rem; font-size: 0.875rem;"><i class="fa-solid fa-trash"></i></button>
+                        <tr th:each="product : ${products}" th:data-url="@{/admin/products/{code}(code=${product.productCode})}" onclick="window.location.href=this.getAttribute('data-url')">
+                            <td><span class="id-tag" th:text="${product.productCode}"></span></td>
+                            <td><span style="font-weight: 600;" th:text="${product.productName}"></span></td>
+                            <td>
+                                <span style="background: var(--ds-surface-high); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700; color: var(--ds-secondary);" th:text="${product.productLine}">
+                                </span>
+                            </td>
+                            <td th:text="${product.productScale}"></td>
+                            <td th:classappend="${product.quantityInStock < 100 ? 'low-stock' : ''}" th:text="${product.quantityInStock}"></td>
+                            <td th:text="${'$' + product.buyPrice}"></td>
+                            <td style="text-align: right;" onclick="event.stopPropagation()">
+                                <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                                    <a th:href="@{/admin/products(action='edit', editCode=${product.productCode})}" class="action-btn" title="Edit Catalog">
+                                        <i class="fa-solid fa-pen-nib fa-xs"></i>
+                                    </a>
+                                    <form th:action="@{'/admin/products/delete/' + ${product.productCode}}" method="POST" style="display: inline;">
+                                        <button type="submit" class="action-btn delete" title="Decommission" onclick="return confirm('Permanently remove this product from the inventory archive?')">
+                                            <i class="fa-solid fa-trash-can fa-xs"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
-                        <tr>
-                            <td style="font-weight: 600; font-family: monospace;">S10_1949</td>
-                            <td style="font-weight: 500;">1952 Alpine Renault 1300</td>
-                            <td>Classic Cars</td>
-                            <td>Classic Metal Creations</td>
-                            <td>1:10</td>
-                            <td>$98.58</td>
-                            <td>$214.30</td>
-                            <td style="text-align: center;">7305</td>
-                            <td style="white-space: nowrap;">
-                                <button class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;"><i class="fa-solid fa-pen"></i></button>
-                                <button class="btn" style="background-color: var(--status-danger); color: white; padding: 0.25rem 0.5rem; font-size: 0.875rem;"><i class="fa-solid fa-trash"></i></button>
-                            </td>
+                        <tr th:if="${#lists.isEmpty(products)}">
+                            <td colspan="7" style="text-align: center; padding: 3rem; color: var(--ds-outline);">No inventory models found matching your parameters.</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
+
+    <!-- ── SLIDING DRAWER ── -->
+    <div id="drawerOverlay" th:classappend="${action} ? 'active' : ''" onclick="window.location.href='/admin/products'"></div>
+    
+    <div id="entryDrawer" th:classappend="${action} ? 'active' : ''">
+        <div class="drawer-header">
+            <h2 class="drawer-title" th:text="${action == 'edit'} ? 'Edit Issue' : 'Catalog New Issue'"></h2>
+        </div>
+        
+        <!-- We use flex column on the form so the body scrolls but footer is fixed -->
+        <form id="productForm" th:action="@{/admin/products/save}" method="POST" th:object="${productForm}" style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+            <div class="drawer-body">
+                <div class="form-section">
+                    <div class="section-label">Taxonomy Identifiers</div>
+                    
+                    <div class="input-group">
+                        <label for="productCode">SKU / Model Code *</label>
+                        <input type="text" id="productCode" th:field="*{productCode}" class="drawer-input" required 
+                               th:readonly="${action == 'edit'}" placeholder="e.g. S10_1678">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="productName">Model Nomenclature *</label>
+                        <input type="text" id="productName" th:field="*{productName}" class="drawer-input" required>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="input-group">
+                            <label for="productLine">Product Line *</label>
+                            <select id="productLine" th:field="*{productLine}" class="drawer-input" required>
+                                <option value="">Select Line...</option>
+                                <option th:each="line : ${productLines}" 
+                                        th:value="${line.productLine}" 
+                                        th:text="${line.productLine}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="productScale">Scale Ratio *</label>
+                            <input type="text" id="productScale" th:field="*{productScale}" class="drawer-input" placeholder="e.g. 1:10" required>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="productVendor">Manufacturer / Vendor *</label>
+                        <input type="text" id="productVendor" th:field="*{productVendor}" class="drawer-input" required>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-label">Logistical Valuation</div>
+                    
+                    <div class="input-group">
+                        <label for="quantityInStock">Quantity In Stock</label>
+                        <input type="number" id="quantityInStock" th:field="*{quantityInStock}" class="drawer-input" required>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="input-group">
+                            <label for="buyPrice">Acquisition Cost (Buy Price)</label>
+                            <input type="number" step="0.01" id="buyPrice" th:field="*{buyPrice}" class="drawer-input" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="msrp">Suggested Retail Value (MSRP)</label>
+                            <input type="number" step="0.01" id="msrp" th:field="*{msrp}" class="drawer-input" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <div class="section-label">Archival Narrative</div>
+                    <div class="input-group">
+                        <label for="productDescription">Detailed Specification Note *</label>
+                        <textarea id="productDescription" th:field="*{productDescription}" class="drawer-textarea" required></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="drawer-footer">
+                <a href="/admin/products" class="archive-btn-primary" style="background:#fff; color:var(--ds-on-surface); border:1px solid var(--ds-surface-high); text-align:center; padding: 0.75rem 2rem;">Cancel</a>
+                <button type="submit" class="archive-btn-primary" style="flex:1; justify-content:center;">Commit to Inventory</button>
+            </div>
+        </form>
+    </div>
+
 </body>
 </html>

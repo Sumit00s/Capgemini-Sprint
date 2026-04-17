@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Product Line Profile')}"></head>
+
+<style>
+    :root {
+        --ds-primary-dark:      #1B263B;
+        --ds-secondary:         #415A77;
+        --ds-accent:            #778DA9;
+        --ds-surface:           #f8f9fa;
+        --ds-surface-high:      #e3e9ec;
+        --ds-surface-white:     #ffffff;
+        --ds-on-surface:        #2b3437;
+        --ds-outline:           #737c7f;
+        --font-headline: 'Newsreader', Georgia, serif;
+        --font-body: 'Manrope', 'Inter', sans-serif;
+        --radius-md: 8px;
+        --radius-sm: 4px;
+    }
+
+    body.admin-layout {
+        background-color: var(--ds-surface);
+        min-height: 100vh;
+        display: flex;
+    }
+
+    .main-content {
+        flex: 1;
+        margin-left: 250px;
+        padding: 4rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #f1f4f6 100%);
+    }
+
+    /* ── HERO SECTION ── */
+    .profile-tag {
+        font-family: var(--font-body);
+        font-size: 0.6875rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--ds-outline);
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    .profile-tag::after {
+        content: '';
+        width: 3rem;
+        height: 1px;
+        background: #ced4da;
+    }
+    .profile-title {
+        font-family: var(--font-headline);
+        font-size: 2.75rem;
+        font-weight: 400;
+        color: var(--ds-primary-dark);
+        letter-spacing: -0.02em;
+        margin-bottom: 0.5rem;
+    }
+    .profile-meta {
+        font-family: var(--font-body);
+        font-size: 0.875rem;
+        color: var(--ds-secondary);
+        font-weight: 600;
+        margin-bottom: 3rem;
+        display: flex;
+        gap: 1.5rem;
+    }
+
+    /* ── INFO GRID ── */
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        margin-bottom: 4rem;
+    }
+    .info-card {
+        background: #fff;
+        padding: 2.5rem;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--ds-surface-high);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+    .info-label {
+        font-size: 0.625rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--ds-primary-dark);
+        margin-bottom: 1rem;
+        border-bottom: 1px solid var(--ds-surface-high);
+        padding-bottom: 0.5rem;
+    }
+    .info-value {
+        font-family: var(--font-body);
+        font-size: 1rem;
+        color: var(--ds-on-surface);
+        line-height: 1.7;
+    }
+
+    /* ── ACTIVITY HUB ── */
+    .activity-hub {
+        background: #fff;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--ds-surface-high);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.04);
+        overflow: hidden;
+    }
+    .tabs-header {
+        background: var(--ds-surface);
+        border-bottom: 1px solid var(--ds-surface-high);
+        padding: 0 2rem;
+        display: flex;
+    }
+    .tab-input { display: none; }
+    .tab-label {
+        padding: 1.25rem 2rem;
+        font-family: var(--font-headline);
+        font-size: 1.125rem;
+        color: var(--ds-primary-dark);
+        background: none;
+        border: none;
+        border-bottom: 2px solid var(--ds-primary-dark);
+        cursor: pointer;
+        display: inline-block;
+    }
+    
+    /* ── TABLES ── */
+    .registry-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: var(--font-body);
+    }
+    .registry-table th {
+        text-align: left;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        color: var(--ds-outline);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        padding: 1.25rem 2rem;
+        background: #fdfdfd;
+        border-bottom: 1px solid var(--ds-surface-high);
+    }
+    .registry-table td {
+        padding: 1.25rem 2rem;
+        font-size: 0.875rem;
+        color: var(--ds-on-surface);
+        border-bottom: 1px solid var(--ds-surface-low);
+    }
+    .registry-table tr:hover td { background: #fafbfc; cursor: pointer; }
+
+    @media (max-width: 1024px) {
+        .main-content { margin-left: 0; padding: 2rem; }
+    }
+</style>
+
+<body class="page-wrapper admin-layout">
+    <th:block th:replace="~{fragments/navigation :: admin_sidebar}"></th:block>
+
+    <div class="main-content">
+        <a th:href="@{/admin/productlines}" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--ds-secondary); font-size: 0.8125rem; font-weight: 600; margin-bottom: 2rem;">
+            <i class="fa-solid fa-arrow-left"></i> Return to Collections
+        </a>
+
+        <div class="profile-tag">Category Root Node</div>
+        <h1 class="profile-title" th:text="${productLine.productLine}">Category Title</h1>
+        <div class="profile-meta">
+            <span>Directory Identifier: <span style="font-family: monospace;" th:text="${productLine.productLine}"></span></span>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-card">
+                <div class="info-label">Narrative Biography</div>
+                <div class="info-value" th:text="${productLine.textDescription}"></div>
+                
+                <div th:if="${productLine.htmlDescription != null and !productLine.htmlDescription.isEmpty()}" style="margin-top: 2rem;">
+                    <div class="info-label">HTML Block Rendering</div>
+                    <div class="info-value" style="background: var(--ds-surface); border: 1px dashed var(--ds-outline); padding: 1rem; font-family: monospace; font-size: 0.8125rem;" th:text="${productLine.htmlDescription}"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab Hub -->
+        <div class="activity-hub">
+            <div class="tabs-header">
+                <div class="tab-label">Associated Vehicles & Models</div>
+            </div>
+
+            <!-- Vehicles Tab -->
+            <div class="tab-panel" style="display: block;">
+                <div class="table-responsive">
+                    <table class="registry-table">
+                        <thead>
+                            <tr>
+                                <th>SKU Base</th>
+                                <th>Vehicle Designation</th>
+                                <th style="text-align: right;">Scale</th>
+                                <th style="text-align: right;">Inventory Hub</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="product : ${products}" 
+                                th:data-url="@{/admin/products/{code}(code=${product.productCode})}"
+                                onclick="window.location.href=this.getAttribute('data-url')">
+                                <td><span style="font-family: 'Newsreader', serif; font-weight: 600; color: var(--ds-primary-dark);" th:text="${product.productCode}"></span></td>
+                                <td style="font-weight: 600;" th:text="${product.productName}"></td>
+                                <td style="text-align: right;" th:text="${product.productScale}"></td>
+                                <td style="text-align: right;">
+                                    <span th:if="${product.quantityInStock <= 50}" style="color: #dc2626; font-weight: 700;" th:text="${product.quantityInStock}"></span>
+                                    <span th:unless="${product.quantityInStock <= 50}" th:text="${product.quantityInStock}"></span>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(products)}">
+                                <td colspan="4" style="text-align: center; padding: 2rem; color: var(--ds-outline);">There are currently no products active within this hierarchy node.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <footer style="margin-top: 4rem; text-align: center; border-top: 1px solid var(--ds-surface-high); padding-top: 2rem;">
+            <p style="font-size: 0.75rem; color: var(--ds-outline); letter-spacing: 0.05em;">ClassicModels Corporate Archive &copy; 2026</p>
+        </footer>
+    </div>
+
+</body>
+</html>
