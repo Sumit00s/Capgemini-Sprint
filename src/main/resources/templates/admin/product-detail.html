@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Model Profile')}"></head>
+
+<style>
+    :root {
+        --ds-primary-dark:      #1B263B;
+        --ds-secondary:         #415A77;
+        --ds-accent:            #778DA9;
+        --ds-surface:           #f8f9fa;
+        --ds-surface-high:      #e3e9ec;
+        --ds-surface-white:     #ffffff;
+        --ds-on-surface:        #2b3437;
+        --ds-outline:           #737c7f;
+        --font-headline: 'Newsreader', Georgia, serif;
+        --font-body: 'Manrope', 'Inter', sans-serif;
+        --radius-md: 8px;
+        --radius-sm: 4px;
+    }
+
+    body.admin-layout {
+        background-color: var(--ds-surface);
+        min-height: 100vh;
+        display: flex;
+    }
+
+    .main-content {
+        flex: 1;
+        margin-left: 250px;
+        padding: 4rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #f1f4f6 100%);
+    }
+
+    /* ── HERO SECTION ── */
+    .profile-tag {
+        font-family: var(--font-body);
+        font-size: 0.6875rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--ds-outline);
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    .profile-tag::after {
+        content: '';
+        width: 3rem;
+        height: 1px;
+        background: #ced4da;
+    }
+    .profile-title {
+        font-family: var(--font-headline);
+        font-size: 2.75rem;
+        font-weight: 400;
+        color: var(--ds-primary-dark);
+        letter-spacing: -0.02em;
+        margin-bottom: 0.5rem;
+    }
+    .profile-meta {
+        font-family: var(--font-body);
+        font-size: 0.875rem;
+        color: var(--ds-secondary);
+        font-weight: 600;
+        margin-bottom: 3rem;
+        display: flex;
+        gap: 1.5rem;
+    }
+
+    /* ── INFO GRID ── */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+        margin-bottom: 4rem;
+    }
+    .info-card {
+        background: #fff;
+        padding: 1.5rem;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--ds-surface-high);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+    .info-label {
+        font-size: 0.625rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--ds-outline);
+        margin-bottom: 0.75rem;
+    }
+    .info-value {
+        font-family: var(--font-body);
+        font-size: 0.9375rem;
+        color: var(--ds-on-surface);
+        font-weight: 500;
+    }
+
+    /* ── ACTIVITY HUB ── */
+    .activity-hub {
+        background: #fff;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--ds-surface-high);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.04);
+        overflow: hidden;
+    }
+    .tabs-header {
+        background: var(--ds-surface);
+        border-bottom: 1px solid var(--ds-surface-high);
+        padding: 0 2rem;
+        display: flex;
+    }
+    .tab-input { display: none; }
+    .tab-label {
+        padding: 1.25rem 2rem;
+        font-family: var(--font-headline);
+        font-size: 1.125rem;
+        color: var(--ds-outline);
+        background: none;
+        border: none;
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-block;
+    }
+    .tab-label:hover { color: var(--ds-secondary); }
+    .tab-panel {
+        display: none;
+        padding: 2rem;
+    }
+    
+    #tab-description:checked ~ .main-content .activity-hub #descriptionTab {
+        display: block;
+    }
+    #tab-description:checked ~ .main-content .activity-hub label[for="tab-description"] {
+        color: var(--ds-primary-dark);
+        border-bottom-color: var(--ds-primary-dark);
+    }
+
+    /* ── TABLES (If needed later for Order logs) ── */
+    .registry-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: var(--font-body);
+    }
+    .registry-table th {
+        text-align: left;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        color: var(--ds-outline);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        padding: 1rem;
+        border-bottom: 1px solid var(--ds-surface-high);
+    }
+    .registry-table td {
+        padding: 1rem;
+        font-size: 0.875rem;
+        color: var(--ds-on-surface);
+        border-bottom: 1px solid var(--ds-surface-low);
+    }
+
+    .low-stock-alert {
+        display: inline-block;
+        margin-top: 0.5rem;
+        background: #fce8e6;
+        color: #d93025;
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-sm);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+    }
+
+    @media (max-width: 1024px) {
+        .main-content { margin-left: 0; padding: 2rem; }
+        .info-grid { grid-template-columns: 1fr; }
+    }
+</style>
+
+<body class="page-wrapper admin-layout">
+    <th:block th:replace="~{fragments/navigation :: admin_sidebar}"></th:block>
+    
+    <!-- Tab State -->
+    <input type="radio" id="tab-description" name="tabs" class="tab-input" checked>
+
+    <div class="main-content">
+        <a th:href="@{/admin/products}" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--ds-secondary); font-size: 0.8125rem; font-weight: 600; margin-bottom: 2rem;">
+            <i class="fa-solid fa-arrow-left"></i> Return to Registry
+        </a>
+
+        <div class="profile-tag" th:text="${product.productLine}">Product Category</div>
+        <h1 class="profile-title" th:text="${product.productName}">Model Nomenclature</h1>
+        <div class="profile-meta">
+            <span>SKU: <span th:text="${product.productCode}"></span></span>
+            <span style="font-style: italic; opacity: 0.7;">Scale: <span th:text="${product.productScale}"></span></span>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-card">
+                <div class="info-label">Vendor Specifics</div>
+                <div class="info-value" th:text="${product.productVendor}">...</div>
+                <div style="font-size: 0.8125rem; color: var(--ds-outline); margin-top: 0.25rem;">Manufacturer of Record</div>
+            </div>
+            
+            <div class="info-card">
+                <div class="info-label">Valuation Economics</div>
+                <div class="info-value" th:text="${'Buy Price: $' + product.buyPrice}">...</div>
+                <div style="font-size: 0.8125rem; color: var(--ds-primary-dark); font-weight: 700; margin-top: 0.25rem;" th:text="${'MSRP: $' + product.msrp}"></div>
+            </div>
+            
+            <div class="info-card">
+                <div class="info-label">Archival Stock</div>
+                <div class="info-value" th:text="${product.quantityInStock + ' units'}">...</div>
+                <div th:if="${product.quantityInStock < 100}" class="low-stock-alert">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Low Inventory Warning
+                </div>
+                <div th:if="${product.quantityInStock >= 100}" style="font-size: 0.8125rem; color: #1e8e3e; font-weight: 600; margin-top: 0.25rem;">
+                    Healthy Stock Status
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab Hub -->
+        <div class="activity-hub">
+            <div class="tabs-header">
+                <label for="tab-description" class="tab-label">Detailed Specification</label>
+            </div>
+
+            <!-- Description Tab -->
+            <div id="descriptionTab" class="tab-panel">
+                <div style="font-family: var(--font-body); font-size: 0.9375rem; color: var(--ds-on-surface); line-height: 1.6; max-width: 800px; padding: 1rem 0;">
+                    <p th:text="${product.productDescription}">Product Description...</p>
+                </div>
+            </div>
+
+        </div>
+
+        <footer style="margin-top: 4rem; text-align: center; border-top: 1px solid var(--ds-surface-high); padding-top: 2rem;">
+            <p style="font-size: 0.75rem; color: var(--ds-outline); letter-spacing: 0.05em;">ClassicModels Corporate Archive &copy; 2026</p>
+        </footer>
+    </div>
+
+</body>
+</html>
